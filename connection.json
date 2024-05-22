@@ -1,0 +1,36 @@
+{
+    "name": "Supplychain",
+    "version": "1.0.0",
+    "channels": {
+      "supplychainchannel": {
+        "orderers": ["orderer.supplychain.com"],
+        "peers": {
+          "manufacturer.supplychain.com": {},
+          "customer.supplychain.com": {}
+        }
+      }
+    },
+    "organizations": {
+      "Supplychain": {
+        "mspid": "SupplychainMSP",
+        "peers": ["manufacturer.supplychain.com", "customer.supplychain.com"]
+      }
+    },
+    "orderers": {
+      "orderer.supplychain.com": {
+        "url": "grpc://orderer.supplychain.com:7050",
+        "grpcOptions": {
+          "ssl-target-name-override": "orderer.supplychain.com"
+        }
+      }
+    },
+    "peers": {
+      "manufacturer.supplychain.com": {
+        "url": "grpc://manufacturer.supplychain.com:7051"
+      },
+      "customer.supplychain.com": {
+        "url": "grpc://customer.supplychain.com:7051"
+      }
+    }
+  }
+  

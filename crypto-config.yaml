@@ -1,0 +1,20 @@
+OrdererOrgs:
+  - Name: Orderer
+    Domain: supplychain.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer
+
+PeerOrgs:
+  # Peer configuration for Natuni
+  - Name: Supplychain
+    Domain: supplychain.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: customer.supplychain.com
+        CommonName: customer.supplychain.com
+      - Hostname: manufacturer.supplychain.com
+        CommonName: manufacturer.supplychain.com
+    Users:
+      Count: 1
+  

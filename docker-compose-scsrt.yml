@@ -1,0 +1,90 @@
+version: '3.8'
+
+networks:
+  supplychain-nets:
+    name: supplychain-nets
+
+
+volumes:
+  data-supplychain-orderer:
+  data-supplychain-manufacturer:
+  data-supplychain-customer:
+
+
+services:
+  development:
+    container_name: supplychain
+    build:
+      context: .
+      dockerfile: Dockerfile.Dev
+    command: sleep infinity
+    stop_grace_period: 5s
+    volumes:
+      - ../..:/workspaces:cached
+    networks:
+      - supplychain-nets
+
+  orderer.supplychain.com:
+    container_name: orderer.supplychain.com
+    image: hyperledger/fabric-orderer:$IMAGE_TAG
+    command: orderer
+    environment:
+      - FABRIC_CFG_PATH=/var/hyperledger/config
+      - FABRIC_LOGGING_SPEC=ERROR
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+    volumes:
+      - ${PWD}/config/orderer:/var/hyperledger/config
+      - ${PWD}/config/crypto-config/ordererOrganizations/supplychain.com/orderers/orderer.supplychain.com/msp:/var/hyperledger/msp
+      - ${PWD}/config/crypto-config/ordererOrganizations/supplychain.com/orderers/orderer.supplychain.com/tls:/var/hyperledger/tls
+      - data-supplychain-orderer:/var/ledger
+    ports:
+      - 7050:7050
+      - 8443:8443
+    networks:
+      - supplychain-nets
+
+  manufacturer.supplychain.com:
+    container_name: manufacturer.supplychain.com
+    image: hyperledger/fabric-peer:$IMAGE_TAG
+    environment:
+      - FABRIC_CFG_PATH=/var/hyperledger/config
+      - FABRIC_LOGGING_SPEC=WARNING
+      - CORE_PEER_LOCALMSPID=SupplychainMSP
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=supplychain-nets
+    command: peer node start
+    volumes:
+      - ${PWD}/config/manufacturer:/var/hyperledger/config
+      - ${PWD}/config/crypto-config/peerOrganizations/supplychain.com/peers/manufacturer.supplychain.com/msp:/var/hyperledger/msp
+      - ${PWD}/config/crypto-config/peerOrganizations/supplychain.com/peers/manufacturer.supplychain.com/tls:/var/hyperledger/tls
+      - /var/run/:/var/run/
+      - data-supplychain-manufacturer:/var/hyperledger/production
+    depends_on:
+      - orderer.supplychain.com
+    ports:
+      - 7051:7051
+      - 7052:7052
+    networks:
+      - supplychain-nets
+
+  customer.supplychain.com:
+    container_name: customer.supplychain.com
+    image: hyperledger/fabric-peer:$IMAGE_TAG
+    environment:
+      - FABRIC_CFG_PATH=/var/hyperledger/config
+      - FABRIC_LOGGING_SPEC=WARNING
+      - CORE_PEER_LOCALMSPID=SupplychainMSP
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=supplychain-nets
+    command: peer node start
+    volumes:
+      - ${PWD}/config/customer:/var/hyperledger/config
+      - ${PWD}/config/crypto-config/peerOrganizations/supplychain.com/peers/customer.supplychain.com/msp:/var/hyperledger/msp
+      - ${PWD}/config/crypto-config/peerOrganizations/supplychain.com/peers/customer.supplychain.com/tls:/var/hyperledger/tls
+      - /var/run/:/var/run/
+      - data-supplychain-customer:/var/hyperledger/production
+    depends_on:
+      - orderer.supplychain.com
+    ports:
+      - 8051:7051
+      - 8052:7052
+    networks:
+      - supplychain-nets
